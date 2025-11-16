@@ -8,7 +8,7 @@ import {
   IconCopy,
 } from "@tabler/icons-react";
 import Particles from "@tsparticles/react";
-import { fetchCodeReview } from "../api/reviewService";
+import { fetchCodeReview } from "../../api/reviewService";
 
 const particlesOptions = {
   background: { color: { value: "transparent" } },

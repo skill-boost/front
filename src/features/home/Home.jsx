@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { IconCode, IconChecklist, IconUserScan } from "@tabler/icons-react";
 import Particles from "@tsparticles/react";
 import { particlesOptions, particlesVersion } from "@/config/particles";
-import { useParticlesInit } from "../hooks/useParticlesInit";
+import { useParticlesInit } from "../../shared/hooks/useParticlesInit";
 
 const BRAND = "SkillBoost";
 const items = [

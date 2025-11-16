@@ -4,7 +4,7 @@ import {
   IconArrowLeft, IconCheck, IconX, IconSparkles,
   IconPlayerPlay, IconSend, IconCodeCircle, IconTerminal2, IconCopy,
 } from "@tabler/icons-react";
-import { fetchAiCodingProblem, runCode, submitCode } from "../api/codingService";
+import { fetchAiCodingProblem, runCode, submitCode } from "../../api/codingService";
 
 /* Toast */
 const Toast = ({ message, type }) => {
@@ -37,12 +37,8 @@ const CodeEditor = ({
           onChange={(e) => setLanguage(e.target.value)}
         >
           <option value="python">Python 3</option>
-          <option value="javascript">JavaScript</option>
-          <option value="c">C</option>
           <option value="cpp">C++</option>
           <option value="java">Java</option>
-          <option value="swift">Swift</option>
-          <option value="kotlin">Kotlin</option>
         </select>
 
         <div className="flex gap-2">
@@ -118,7 +114,9 @@ function RunPanel({ inputData, setInputData, isExecuting, runError, runResult })
 
       <div className="flex-1 mt-3 relative min-h-0">
         {isExecuting && (
-          <div className="p-3 bg-blue-900/30 text-blue-300 rounded text-xs">코드를 실행 중입니다…</div>
+          <div className="p-3 bg-blue-900/30 text-blue-300 rounded text-xs">
+            코드를 실행 중입니다…
+          </div>
         )}
 
         {!isExecuting && runError && (
@@ -131,7 +129,7 @@ function RunPanel({ inputData, setInputData, isExecuting, runError, runResult })
           <div className="relative h-full min-h-0">
             <div
               className={
-                "h-full text-xs font-mono bg-gray-900 border border-gray-700 rounded p-3 whitespace-pre-wrap overflow-auto " +
+                "h-full text-xs font-mono bg-gray-900 border border-gray-700 rounded p-3 whitespace-pre-wrap overflow-auto text-yellow-300 " +
                 (expand ? "" : "line-clamp-10 pr-10")
               }
             >
@@ -258,17 +256,6 @@ export default function Coding() {
               <option>Easy</option>
               <option>Medium</option>
               <option>Hard</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-sm text-gray-300 mr-2">유형</label>
-            <select
-              className="p-2 bg-gray-700 border border-gray-600 rounded-md"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-            >
-              <option value="Algorithms">알고리즘</option>
-              <option value="Data Structures">자료구조</option>
             </select>
           </div>
           <button

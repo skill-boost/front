@@ -406,14 +406,6 @@ export default function CodingTest() {
 
                 <div className="flex items-center gap-3">
                   <button
-                    disabled
-                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/5 bg-white/[0.02] text-[11px] font-medium text-slate-500 opacity-50 cursor-not-allowed hover:bg-white/5"
-                  >
-                    <Play size={12} />
-                    <span>실행</span>
-                  </button>
-                  
-                  <button
                     onClick={handleSubmit}
                     disabled={isSubmitting || !problem}
                     className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:shadow-none hover:translate-y-[-1px] active:translate-y-[0px]"

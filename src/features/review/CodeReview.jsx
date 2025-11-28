@@ -1,3 +1,4 @@
+// src/features/review/CodeReview.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -24,7 +25,6 @@ const particlesOptions = {
   },
 };
 
-// 리뷰 텍스트 포맷팅: "- " → "□ " + 항목 사이 한 줄 띄우기
 function formatReviewText(review) {
   if (!review) return "";
   return review
@@ -36,8 +36,7 @@ function formatReviewText(review) {
 }
 
 export default function Review() {
-  // 모드: 코드 / 레포
-  const [mode, setMode] = useState("code"); // "code" | "repo"
+  const [mode, setMode] = useState("code");
 
   const [code, setCode] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
@@ -51,20 +50,36 @@ export default function Review() {
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  // 🔹 Code / Repo 탭 변경 시 입력값 초기화
+  const handleModeChange = (nextMode) => {
+    if (nextMode === mode) return;
+    setMode(nextMode);
+
+    // 입력 영역 초기화
+    setCode("");
+    setRepoUrl("");
+    setUserComment("");
+    setError(null);
+    setReview("");
+    setQuestions([]);
+    setShowQuestions(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    // 아직 레포 모드는 백엔드 구현 전이라 안내만 띄우고 return
-    if (mode === "repo") {
-      if (!repoUrl.trim()) return;
-      setError(
-        "Repository URL 기반 리뷰는 아직 백엔드 구현 전입니다. 우선 코드를 직접 붙여넣어서 사용해줘. 이 UI는 나중에 레포 분석 백엔드 만들 때 그대로 연결하면 된다!"
-      );
+    // 공통: 코드 필수
+    if (!code.trim()) {
+      setError("리뷰할 코드를 입력해주세요.");
       return;
     }
 
-    if (!code.trim()) return;
+    // Repo 모드일 때는 repoUrl도 필수
+    if (mode === "repo" && !repoUrl.trim()) {
+      setError("Repository URL을 입력해주세요. (예: https://github.com/owner/repo)");
+      return;
+    }
 
     setIsLoading(true);
     setReview("");
@@ -72,10 +87,12 @@ export default function Review() {
     setShowQuestions(false);
 
     try {
-      const data = await fetchCodeReview(code, userComment);
-      console.log("[CodeReview] parsed data:", data);
+      const data = await fetchCodeReview(
+        code,
+        userComment,
+        mode === "repo" ? repoUrl : null
+      );
 
-      // review 텍스트 후보 몇 가지에서 찾아보기
       const reviewText =
         typeof data?.review === "string"
           ? data.review
@@ -85,9 +102,7 @@ export default function Review() {
           ? data
           : "";
 
-      if (!reviewText) {
-        throw new Error("AI 응답이 비어 있습니다.");
-      }
+      if (!reviewText) throw new Error("AI 응답이 비어 있습니다.");
 
       setReview(reviewText);
       setQuestions(Array.isArray(data.questions) ? data.questions : []);
@@ -103,12 +118,13 @@ export default function Review() {
       const textToCopy = showQuestions
         ? questions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")
         : review || "";
+      if (!textToCopy) return;
 
       await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch {
-      // ignore
+      // noop
     }
   };
 
@@ -120,7 +136,7 @@ export default function Review() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* HEADER */}
+        {/* 헤더 */}
         <header className="flex items-center justify-between mb-8">
           <Link
             to="/"
@@ -139,20 +155,18 @@ export default function Review() {
           <div className="w-16 md:w-24" />
         </header>
 
-        {/* GRID */}
         <main className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* LEFT: 입력 카드 */}
+          {/* LEFT CARD */}
           <section className="flex flex-col">
             <div className="gcard w-full h-[75vh]">
               <div className="ginner glass-sheen flex flex-col h-full">
-                {/* 헤더: 기존 디자인 + 작게 모드 토글만 추가 */}
                 <div className="gheader flex items-center justify-between">
                   <span>Paste Your Code</span>
 
                   <div className="inline-flex rounded-full bg-slate-900/40 p-1 text-[11px] md:text-xs">
                     <button
                       type="button"
-                      onClick={() => setMode("code")}
+                      onClick={() => handleModeChange("code")}
                       className={`px-3 py-1 rounded-full transition ${
                         mode === "code"
                           ? "bg-sky-500 text-white"
@@ -163,7 +177,7 @@ export default function Review() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setMode("repo")}
+                      onClick={() => handleModeChange("repo")}
                       className={`px-3 py-1 rounded-full transition ${
                         mode === "repo"
                           ? "bg-sky-500 text-white"
@@ -175,14 +189,14 @@ export default function Review() {
                   </div>
                 </div>
 
-                {/* 본문: 코드 / 레포 입력만 조건부로 바꿈, 카드 레이아웃은 그대로 */}
+                {/* CONTENT */}
                 <div className="flex-1 p-5 pt-4 pb-3 overflow-y-auto custom-scrollbar">
                   {mode === "code" ? (
                     <textarea
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
-                      placeholder="여기에 리뷰할 코드를 붙여넣으세요..."
-                      className="w-full h-full bg-transparent text-sm md:text-[15px] leading-relaxed text-slate-100 placeholder:text-slate-500/80 resize-none focus:outline-none"
+                      placeholder="여기에 리뷰할 코드를 붙여넣으세요"
+                      className="w-full min-h-[200px] bg-transparent text-sm md:text-[15px] leading-relaxed text-slate-100 placeholder:text-slate-500/80 resize-none focus:outline-none custom-scrollbar"
                       spellCheck="false"
                     />
                   ) : (
@@ -191,20 +205,22 @@ export default function Review() {
                         type="text"
                         value={repoUrl}
                         onChange={(e) => setRepoUrl(e.target.value)}
-                        placeholder="예: https://github.com/username/project"
+                        placeholder="예: https://github.com/owner/repo"
                         className="w-full rounded-xl bg-slate-900/40 border border-slate-700/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500/80 focus:outline-none focus:border-sky-400/80"
                       />
-                      <p className="text-[11px] md:text-xs text-slate-400">
-                        Repo 모드는 UI만 먼저 만들어둔 상태야. 나중에 백엔드에서
-                        레포 코드를 읽어오는 기능을 만들면 이 입력값을 그대로
-                        연결해서, 전체 프로젝트 기준 코드 리뷰 + 예상 면접 질문
-                        생성으로 확장할 수 있어.
-                      </p>
+
+                      <textarea
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        placeholder="레포지터리 안에서 리뷰받고 싶은 주요 파일 코드를 붙여넣어 주세요"
+                        className="w-full min-h-[140px] bg-transparent text-sm md:text-[15px] leading-relaxed text-slate-100 placeholder:text-slate-500/80 resize-none focus:outline-none custom-scrollbar"
+                        spellCheck="false"
+                      />
                     </div>
                   )}
                 </div>
 
-                {/* 요구사항 + 버튼 (기존 디자인 유지) */}
+                {/* REQUIREMENTS + 버튼 */}
                 <form
                   onSubmit={handleSubmit}
                   className="border-t border-white/5 px-5 pt-3 pb-4 space-y-3"
@@ -219,7 +235,7 @@ export default function Review() {
                       placeholder={
                         mode === "code"
                           ? "예: 보안 위주로 리뷰해줘 / 성능 개선 포인트 중심으로 해줘"
-                          : "예: 백엔드 구조 위주로 리뷰해줘 / 테스트 코드 품질 위주로 봐줘 (레포 모드 구현되면 사용 예정)"
+                          : "예: 백엔드 구조 위주로 리뷰해줘 / 테스트 코드 품질 위주로"
                       }
                       className="w-full h-[96px] rounded-xl bg-slate-900/40 border border-slate-700/60 px-3 py-2 text-xs md:text-sm text-slate-100 placeholder:text-slate-500/80 resize-none focus:outline-none custom-scrollbar"
                     />
@@ -230,7 +246,9 @@ export default function Review() {
                       type="submit"
                       disabled={
                         isLoading ||
-                        (mode === "code" ? !code.trim() : !repoUrl.trim())
+                        (mode === "code"
+                          ? !code.trim()
+                          : !repoUrl.trim() || !code.trim())
                       }
                       className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-500 px-5 py-2.5 text-sm font-medium shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all"
                     >
@@ -252,7 +270,7 @@ export default function Review() {
             </div>
           </section>
 
-          {/* RIGHT: 리뷰 / 질문 카드 (이전 버전 그대로 유지) */}
+          {/* RIGHT CARD */}
           <section className="flex flex-col">
             <div className="gcard w-full h-[75vh]">
               <div className="ginner glass-sheen flex flex-col h-full">
@@ -265,7 +283,7 @@ export default function Review() {
                     {review && questions.length > 0 && (
                       <button
                         type="button"
-                        onClick={() => setShowQuestions((prev) => !prev)}
+                        onClick={() => setShowQuestions((p) => !p)}
                         className="flex items-center gap-1 px-3 py-1.5 text-xs md:text-sm rounded-xl bg-indigo-600 hover:bg-indigo-500 transition"
                       >
                         <IconSparkles size={16} />
@@ -286,7 +304,7 @@ export default function Review() {
                 </div>
 
                 <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                  {/* 로딩 */}
+                  {/* LOADING */}
                   {isLoading && !review && (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                       <IconLoader2 size={40} className="animate-spin mb-4" />
@@ -296,7 +314,7 @@ export default function Review() {
                     </div>
                   )}
 
-                  {/* 에러 */}
+                  {/* ERROR */}
                   {error && (
                     <div className="p-4 bg-red-900/40 border border-red-700/50 rounded-lg text-red-200">
                       <div className="flex items-center gap-2 font-semibold mb-1">
@@ -307,25 +325,25 @@ export default function Review() {
                     </div>
                   )}
 
-                  {/* 초기 상태 */}
+                  {/* EMPTY */}
                   {!isLoading && !error && !review && (
                     <div className="h-full flex items-center justify-center text-slate-400/90 text-center">
                       코드를 제출하면 AI 리뷰와 예상 면접 질문이 표시됩니다.
                     </div>
                   )}
 
-                  {/* 리뷰 화면 */}
+                  {/* REVIEW */}
                   {!showQuestions && review && (
                     <pre className="whitespace-pre-wrap text-sm md:text-[15px] leading-relaxed text-slate-100">
                       {formatReviewText(review)}
                     </pre>
                   )}
 
-                  {/* 질문 화면 */}
+                  {/* QUESTIONS */}
                   {showQuestions && questions.length > 0 && (
                     <ol className="list-decimal list-inside space-y-3 text-sm md:text-[15px] leading-relaxed text-slate-100">
-                      {questions.map((q, idx) => (
-                        <li key={idx} className="whitespace-pre-wrap">
+                      {questions.map((q, i) => (
+                        <li key={i} className="whitespace-pre-wrap">
                           {q.trim()}
                         </li>
                       ))}

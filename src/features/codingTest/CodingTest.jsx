@@ -1,3 +1,4 @@
+// src/features/coding/CodingTest.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -123,16 +124,18 @@ export default function CodingTest() {
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // AI 피드백을 보여줄지 결과 요약을 보여줄지 토글하는 상태
+  // AI 피드백(리뷰/면접질문) 구역을 열지 말지 토글
   const [showFeedback, setShowFeedback] = useState(false);
+
+  // 코드 리뷰 vs 예상 면접 질문 토글 상태
+  const [showInterview, setShowInterview] = useState(false);
 
   // 언어 변경
   const handleChangeLanguage = (nextLang) => {
     if (code !== LANGUAGE_TEMPLATES[language] && code.trim() !== "") {
-        // window.confirm 대신 커스텀 모달이 권장되지만, 빠른 해결을 위해 일단 유지
-        if (!window.confirm("언어를 변경하면 작성 중인 코드가 초기화됩니다. 계속하시겠습니까?")) {
-            return;
-        }
+      if (!window.confirm("언어를 변경하면 작성 중인 코드가 초기화됩니다. 계속하시겠습니까?")) {
+        return;
+      }
     }
     setLanguage(nextLang);
     setCode(LANGUAGE_TEMPLATES[nextLang] || "");
@@ -144,6 +147,7 @@ export default function CodingTest() {
     setErrorMsg("");
     setResult(null);
     setShowFeedback(false);
+    setShowInterview(false);
     try {
       const data = await fetchRandomProblem(difficulty);
       setProblem(data);
@@ -171,6 +175,7 @@ export default function CodingTest() {
     setErrorMsg("");
     setResult(null);
     setShowFeedback(false);
+    setShowInterview(false);
 
     try {
       const res = await submitCode({
@@ -180,8 +185,9 @@ export default function CodingTest() {
         userId: 1, // Long 타입이므로 숫자 1 사용
       });
       setResult(res);
-      // AI 피드백이 있다면, 기본적으로 피드백 화면을 보여주도록 설정
-      if (res.aiFeedback) {
+
+      // aiFeedback 또는 interviewQuestions가 있으면 피드백 영역 기본 ON
+      if (res.aiFeedback || (res.interviewQuestions && res.interviewQuestions.length > 0)) {
         setShowFeedback(true);
       } else {
         setShowFeedback(false);
@@ -453,7 +459,7 @@ export default function CodingTest() {
                     {/* 상단 요약/피드백 토글 */}
                     <div className="flex items-center justify-between gap-5 mb-5">
                       <div className="flex items-center gap-4">
-                         {/* 결과 상태 표시 */}
+                        {/* 결과 상태 표시 */}
                         <div className={`flex items-center gap-2.5 px-4 py-2 rounded-full border text-sm font-bold shadow-lg backdrop-blur-sm ${
                           isPassed(result.status)
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10"
@@ -474,7 +480,7 @@ export default function CodingTest() {
                       </div>
 
                       {/* AI 피드백 토글 버튼 */}
-                      {result.aiFeedback && (
+                      {(result.aiFeedback || (result.interviewQuestions && result.interviewQuestions.length > 0)) && (
                         <button
                           onClick={() => setShowFeedback((prev) => !prev)}
                           className="px-3 py-1.5 text-xs rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1 transition-all"
@@ -489,16 +495,45 @@ export default function CodingTest() {
                     </div>
                     
                     {/* 결과 내용 */}
-                    {showFeedback && result.aiFeedback ? (
-                      // AI 피드백 섹션
+                    {showFeedback && (result.aiFeedback || (result.interviewQuestions && result.interviewQuestions.length > 0)) ? (
+                      // 👉 여기서 코드 리뷰 ↔ 예상 면접 질문 토글
                       <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 shadow-inner">
-                        <h4 className="text-xs font-bold text-cyan-200 flex items-center gap-2 mb-2 uppercase tracking-wider">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-xs font-bold text-cyan-200 flex items-center gap-2 uppercase tracking-wider">
                             <Sparkles size={14} className="text-cyan-400" />
-                            AI 코드 리뷰
-                        </h4>
-                        <div className="text-sm text-slate-300 whitespace-pre-wrap font-light leading-relaxed">
-                            {result.aiFeedback}
+                            {showInterview ? "예상 면접 질문" : "AI 코드 리뷰"}
+                          </h4>
+
+                          {result.interviewQuestions && result.interviewQuestions.length > 0 && (
+                            <button
+                              onClick={() => setShowInterview((prev) => !prev)}
+                              className="px-3 py-1 text-[11px] rounded-lg bg-[#0b1120]/70 hover:bg-[#020617] border border-cyan-500/40 text-cyan-100 flex items-center gap-1 transition-all"
+                            >
+                              <ChevronRight
+                                size={12}
+                                className={`transition-transform ${showInterview ? "rotate-90" : ""}`}
+                              />
+                              <span className="font-medium">
+                                {showInterview ? "코드 리뷰 보기" : "예상 면접 질문 보기"}
+                              </span>
+                            </button>
+                          )}
                         </div>
+
+                        {showInterview && result.interviewQuestions && result.interviewQuestions.length > 0 ? (
+                          // 🔥 여기서 1. 2. 3. 형식으로 질문 출력
+                          <ol className="text-sm text-slate-300 font-light leading-relaxed list-decimal pl-5 space-y-2">
+                            {result.interviewQuestions.map((q, idx) => (
+                              <li key={idx} className="whitespace-pre-wrap">
+                                {q}
+                              </li>
+                            ))}
+                          </ol>
+                        ) : (
+                          <div className="text-sm text-slate-300 whitespace-pre-wrap font-light leading-relaxed">
+                            {result.aiFeedback || "AI 코드 리뷰가 제공되지 않았습니다."}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       // 결과 요약 섹션

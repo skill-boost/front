@@ -7,9 +7,9 @@ import CodingTest from "./features/codingTest/CodingTest";
 import CodeReview from "./features/review/CodeReview";
 
 // 인터뷰 분리 페이지들
-import Intro from "./features/interview/Intro";
-import Session from "./features/interview/Session";
-import Result from "./features/interview/Result";
+import Intro from "./features/interview/pages/Intro";
+import Session from "./features/interview/pages/Session";
+import Result from "./features/interview/pages/Result";
 
 export default function App() {
   return (

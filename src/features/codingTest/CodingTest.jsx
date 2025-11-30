@@ -1,4 +1,3 @@
-// src/features/coding/CodingTest.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -13,58 +12,14 @@ import {
   ChevronRight,
   Maximize2,
   Home,
-  Code2
+  Code2,
 } from "lucide-react";
 
-// -----------------------------------------------------------
-// [오류 수정] codingService.js 파일을 직접 통합하여 경로 오류 해결
-// -----------------------------------------------------------
-
-const BASE_URL = "/api";
-
-const fetchRandomProblem = async (difficulty) => {
-  const query = difficulty ? `?difficulty=${difficulty}` : "";
-  // API 경로: /api/coding/problems/random
-  const response = await fetch(`${BASE_URL}/coding/problems/random${query}`);
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(
-      text || `랜덤 문제를 불러오지 못했습니다. (status: ${response.status})`
-    );
-  }
-
-  return await response.json();
-};
-
-const submitCode = async ({ problemId, code, language, userId }) => {
-  const payload = {
-    problemId,
-    sourceCode: code,
-    language,
-    userId: userId ?? 1, // userId가 null/undefined일 경우 기본값 1 사용 (Long 타입 일치)
-  };
-
-  // API 경로: /api/coding/submissions
-  const response = await fetch(`${BASE_URL}/coding/submissions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(text || `채점 요청에 실패했습니다. (status: ${response.status})`);
-  }
-
-  return await response.json();
-};
-
-// -----------------------------------------------------------
-// 컴포넌트 시작
-// -----------------------------------------------------------
+// ✅ API 호출은 분리된 서비스에서 import
+import {
+  fetchRandomProblem,
+  submitCode,
+} from "../../api/codingService";
 
 // 언어 옵션
 const LANGUAGE_OPTIONS = [
@@ -159,7 +114,7 @@ export default function CodingTest() {
     if (code !== LANGUAGE_TEMPLATES[language] && code.trim() !== "") {
       if (
         !window.confirm(
-          "언어를 변경하면 작성 중인 코드가 초기화됩니다. 계속하시겠습니까?"
+          "언어를 변경하면 작성 중인 코드가 초기화됩니다. 계속하시겠습니까?",
         )
       ) {
         return;
@@ -181,7 +136,7 @@ export default function CodingTest() {
       setProblem(data);
     } catch (err) {
       setErrorMsg(
-        err?.message || "문제 로딩 중 오류가 발생했습니다. (백엔드 서버 확인 필요)"
+        err?.message || "문제 로딩 중 오류가 발생했습니다. (백엔드 서버 확인 필요)",
       );
     } finally {
       setIsLoadingProblem(false);
@@ -209,7 +164,7 @@ export default function CodingTest() {
         problemId: problem.id,
         code,
         language,
-        userId: 1, // Long 타입이므로 숫자 1 사용
+        // userId는 codingService에서 guest 처리 (또는 나중에 로그인 정보 연결)
       });
       setResult(res);
       // showInterview는 기본 false (코드 리뷰 먼저 보여줌)
@@ -548,7 +503,7 @@ export default function CodingTest() {
                         </div>
                       </div>
 
-                      {/* 🔥 오른쪽: 예상 면접 질문 토글 버튼 (결과 요약 버튼 삭제) */}
+                      {/* 🔥 오른쪽: 예상 면접 질문 토글 버튼 */}
                       {Array.isArray(result.interviewQuestions) &&
                         result.interviewQuestions.length > 0 && (
                           <button
@@ -570,7 +525,7 @@ export default function CodingTest() {
                         )}
                     </div>
 
-                    {/* 🔥 내용: 피드백 / 질문만 보여줌, 결과 요약 뷰 제거 */}
+                    {/* 🔥 피드백 / 질문 */}
                     {hasFeedback ? (
                       <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 shadow-inner">
                         <div className="flex items-center justify-between mb-2">

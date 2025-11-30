@@ -1,5 +1,3 @@
-// src/features/interview/Session.jsx
-
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {

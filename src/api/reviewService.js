@@ -1,5 +1,7 @@
-// src/api/reviewService.js
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL
+    ? import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, "")
+    : "/api";
 
 export const fetchCodeReview = async (code, comment, repoUrl) => {
   const payload = {
@@ -37,6 +39,7 @@ export const fetchCodeReview = async (code, comment, repoUrl) => {
     try {
       return JSON.parse(raw);
     } catch {
+      // 응답이 순수 텍스트일 때
       return { review: raw, questions: [] };
     }
   } catch (error) {

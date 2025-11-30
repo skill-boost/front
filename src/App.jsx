@@ -1,4 +1,3 @@
-// apps/web/src/App.jsx
 import { Routes, Route } from "react-router-dom";
 
 // 맨 위 import 부분

@@ -1,4 +1,3 @@
-// src/hooks/useParticlesInit.js
 import { useEffect, useState } from "react";
 import { initParticlesEngine } from "@tsparticles/react";
 import { loadAll } from "@tsparticles/all";

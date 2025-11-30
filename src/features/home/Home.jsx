@@ -19,6 +19,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden text-white">
+      <header className="w-full flex justify-end p-4 absolute z-20">
+        <Link
+          to="/login"
+          className="text-sm px-4 py-2 rounded-full border border-white/20 bg-black/30 hover:bg-white/10 transition"
+        >
+          Login
+        </Link>
+      </header>
       <Particles
         id="tsparticles"
         options={particlesOptions}

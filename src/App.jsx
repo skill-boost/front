@@ -1,6 +1,10 @@
 // apps/web/src/App.jsx
 import { Routes, Route } from "react-router-dom";
 
+// 맨 위 import 부분
+import Login from "@/features/auth/Login";
+import GithubCallback from "@/features/auth/GithubCallback";
+
 // Feature-based 페이지들
 import Home from "./features/home/Home";
 import CodingTest from "./features/codingTest/CodingTest";
@@ -27,6 +31,8 @@ export default function App() {
       <Route path="/interview" element={<Intro />} />
       <Route path="/interview/session" element={<Session />} />
       <Route path="/interview/result" element={<Result />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/oauth/github/callback" element={<GithubCallback />} />
 
       {/* 404 */}
       <Route path="*" element={<div style={{ padding: 24 }}>Not Found</div>} />

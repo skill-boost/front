@@ -9,7 +9,8 @@ import {
   IconCopy,
 } from "@tabler/icons-react";
 import Particles from "@tsparticles/react";
-import { fetchCodeReview } from "../../api/reviewService";
+
+// 👇 필요 없으니까 삭제: import { fetchCodeReview } from "../../api/reviewService";
 
 const particlesOptions = {
   background: { color: { value: "transparent" } },
@@ -24,6 +25,8 @@ const particlesOptions = {
     size: { value: { min: 1, max: 3 } },
   },
 };
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 function formatReviewText(review) {
   if (!review) return "";
@@ -55,7 +58,6 @@ export default function Review() {
     if (nextMode === mode) return;
     setMode(nextMode);
 
-    // 입력 영역 초기화
     setCode("");
     setRepoUrl("");
     setUserComment("");
@@ -87,11 +89,33 @@ export default function Review() {
     setShowQuestions(false);
 
     try {
-      const data = await fetchCodeReview(
-        code,
-        userComment,
-        mode === "repo" ? repoUrl : null
-      );
+      const accessToken = localStorage.getItem("accessToken");
+
+      const response = await fetch(`${API_BASE_URL}/api/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({
+          code,
+          comment: userComment,
+          repoUrl: mode === "repo" ? repoUrl : null,
+        }),
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("로그인이 필요합니다. GitHub 로그인 후 다시 시도해 주세요.");
+      }
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(
+          `코드 리뷰 요청 실패 (status: ${response.status}) ${text || ""}`.trim()
+        );
+      }
+
+      const data = await response.json();
 
       const reviewText =
         typeof data?.review === "string"
@@ -102,12 +126,14 @@ export default function Review() {
           ? data
           : "";
 
-      if (!reviewText) throw new Error("AI 응답이 비어 있습니다.");
+      if (!reviewText) {
+        throw new Error("AI 응답이 비어 있습니다.");
+      }
 
       setReview(reviewText);
       setQuestions(Array.isArray(data.questions) ? data.questions : []);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "코드 리뷰 요청 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }

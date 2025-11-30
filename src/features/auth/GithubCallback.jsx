@@ -8,13 +8,21 @@ export default function GithubCallback() {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token = params.get("token"); // ?token=... 이라고 온다고 가정
 
-    if (token) {
-      localStorage.setItem("accessToken", token);
-      navigate("/", { replace: true });
+    const accessToken = params.get("accessToken");
+    const refreshToken = params.get("refreshToken");
+    const email = params.get("email");
+    const username = params.get("username");
+
+    if (accessToken && refreshToken) {
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      if (email) localStorage.setItem("userEmail", email);
+      if (username) localStorage.setItem("username", username);
+
+      navigate("/", { replace: true }); // 로그인 후 홈으로
     } else {
-      navigate("/login", { replace: true });
+      navigate("/login", { replace: true }); // 실패 시 로그인 페이지로
     }
   }, [location, navigate]);
 

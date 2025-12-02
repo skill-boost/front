@@ -1,7 +1,7 @@
 // src/features/auth/GithubLoginButton.jsx
 import { IconBrandGithub } from "@tabler/icons-react";
 
-const API_BASE_URL = "http://52.79.181.115:30000/api";
+const API_BASE_URL = "/api";
 
 export default function GithubLoginButton() {
   const handleGithubLogin = () => {

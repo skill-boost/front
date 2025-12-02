@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 const BASE_URL = "/api";
-=======
-// src/api/reviewService.js
-const BASE_URL = "http://52.79.181.115:30000/api";
->>>>>>> origin/feature/frontend-init
 
 /**
  * AI 코드 리뷰 요청

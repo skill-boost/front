@@ -1,3 +1,4 @@
+// src/features/home/Home.jsx
 import { Link } from "react-router-dom";
 import { IconCode, IconChecklist, IconUserScan } from "@tabler/icons-react";
 import Particles from "@tsparticles/react";
@@ -22,7 +23,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden text-white">
-
       {/* --- 상단 헤더 (로그인 / 사용자명 / 로그아웃) --- */}
       <header className="w-full flex justify-end p-4 absolute z-20">
         {hasToken ? (

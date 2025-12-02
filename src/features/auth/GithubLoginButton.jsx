@@ -1,7 +1,7 @@
 // src/features/auth/GithubLoginButton.jsx
 import { IconBrandGithub } from "@tabler/icons-react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = "http://52.79.181.115:30000/api";
 
 export default function GithubLoginButton() {
   const handleGithubLogin = () => {

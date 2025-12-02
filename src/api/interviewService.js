@@ -1,6 +1,6 @@
 // src/api/interviewService.js
 
-const BASE_URL = "/api";
+const BASE_URL = "http://52.79.181.115:30000/api";
 
 /**
  * 새 AI 면접 세션 시작 (레포 URL 기반 질문 생성)

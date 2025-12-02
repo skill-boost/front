@@ -1,5 +1,5 @@
 // src/api/reviewService.js
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = "http://52.79.181.115:30000/api";
 
 export const fetchCodeReview = async (code, comment, repoUrl) => {
   const payload = {

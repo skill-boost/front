@@ -4,7 +4,7 @@
  * Vite 프록시 설정을 통해 백엔드(Spring) API 서버와 통신합니다.
  * vite.config.js에서 '/api' → http://localhost:8080 같은 식으로 프록시된다고 가정합니다.
  */
-const BASE_URL = "/api";
+const BASE_URL = "http://52.79.181.115:30000/api";
 
 /**
  * 난이도에 따라 랜덤 코딩 문제를 가져옵니다.

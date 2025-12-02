@@ -20,7 +20,7 @@ import {
 // [오류 수정] codingService.js 파일을 직접 통합하여 경로 오류 해결
 // -----------------------------------------------------------
 
-const BASE_URL = "/api";
+const BASE_URL = "http://52.79.181.115:30000/api";
 
 const fetchRandomProblem = async (difficulty) => {
   const query = difficulty ? `?difficulty=${difficulty}` : "";

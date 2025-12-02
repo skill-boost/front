@@ -28,6 +28,21 @@ const particlesOptions = {
   },
 };
 
+<<<<<<< HEAD
+=======
+const API_BASE_URL = "http://52.79.181.115:30000/api";
+
+function formatReviewText(review) {
+  if (!review) return "";
+  return review
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => line.replace(/^- /, "□ "))
+    .join("\n\n");
+}
+
+>>>>>>> origin/feature/frontend-init
 export default function Review() {
   const [code, setCode] = useState("");
   const [userComment, setUserComment] = useState("");
@@ -46,11 +61,31 @@ export default function Review() {
     setReview("");
 
     try {
+<<<<<<< HEAD
       const data = await fetchCodeReview(code, userComment, repoUrl);
       if (data?.review) {
         setReview(data.review);
       } else {
         throw new Error(data?.error || "Unknown error");
+=======
+      const accessToken = localStorage.getItem("accessToken");
+
+      const response = await fetch(`${API_BASE_URL}/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({
+          code,
+          comment: userComment,
+          repoUrl: mode === "repo" ? repoUrl : null,
+        }),
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("로그인이 필요합니다. GitHub 로그인 후 다시 시도해 주세요.");
+>>>>>>> origin/feature/frontend-init
       }
     } catch (err) {
       setError(err.message || "Failed to fetch review");

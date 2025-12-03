@@ -31,7 +31,7 @@ export default function App() {
       <Route path="/interview/session" element={<Session />} />
       <Route path="/interview/result" element={<Result />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/oauth/github/callback" element={<GithubCallback />} />
+      <Route path="/oauth2/redirect" element={<GithubCallback />} />
 
       {/* 404 */}
       <Route path="*" element={<div style={{ padding: 24 }}>Not Found</div>} />

@@ -45,6 +45,7 @@ export const fetchCodeReview = async (code, comment, repoUrl) => {
     try {
       return JSON.parse(raw);
     } catch {
+      // 응답이 순수 텍스트일 때
       return { review: raw, questions: [] };
     }
   } catch (error) {

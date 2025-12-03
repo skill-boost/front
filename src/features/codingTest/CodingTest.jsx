@@ -110,7 +110,7 @@ export default function CodingTest() {
     if (code !== LANGUAGE_TEMPLATES[language] && code.trim() !== "") {
       if (
         !window.confirm(
-          "언어를 변경하면 작성 중인 코드가 초기화됩니다. 계속하시겠습니까?"
+          "언어를 변경하면 작성 중인 코드가 초기화됩니다. 계속하시겠습니까?",
         )
       ) {
         return;
@@ -132,7 +132,7 @@ export default function CodingTest() {
       setProblem(data);
     } catch (err) {
       setErrorMsg(
-        err?.message || "문제 로딩 중 오류가 발생했습니다. (백엔드 서버 확인 필요)"
+        err?.message || "문제 로딩 중 오류가 발생했습니다. (백엔드 서버 확인 필요)",
       );
     } finally {
       setIsLoadingProblem(false);
@@ -160,7 +160,7 @@ export default function CodingTest() {
         problemId: problem.id,
         code,
         language,
-        userId: 1, // Long 타입이므로 숫자 1 사용
+        // userId는 codingService에서 guest 처리 (또는 나중에 로그인 정보 연결)
       });
       setResult(res);
     } catch (err) {

@@ -9,7 +9,8 @@ import {
 } from "@tabler/icons-react";
 import Particles from "@tsparticles/react";
 
-// 👇 필요 없으니까 삭제: import { fetchCodeReview } from "../../api/reviewService";
+// API 분리해서 가져오기
+import { fetchCodeReview } from "@/api/reviewService";
 
 const particlesOptions = {
   background: { color: { value: "transparent" } },
@@ -24,8 +25,6 @@ const particlesOptions = {
     size: { value: { min: 1, max: 3 } },
   },
 };
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 function formatReviewText(review) {
   if (!review) return "";
@@ -52,7 +51,6 @@ export default function Review() {
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // 🔹 Code / Repo 탭 변경 시 입력값 초기화
   const handleModeChange = (nextMode) => {
     if (nextMode === mode) return;
     setMode(nextMode);
@@ -70,13 +68,11 @@ export default function Review() {
     e.preventDefault();
     setError(null);
 
-    // 공통: 코드 필수
     if (!code.trim()) {
       setError("리뷰할 코드를 입력해주세요.");
       return;
     }
 
-    // Repo 모드일 때는 repoUrl도 필수
     if (mode === "repo" && !repoUrl.trim()) {
       setError("Repository URL을 입력해주세요. (예: https://github.com/owner/repo)");
       return;
@@ -88,33 +84,8 @@ export default function Review() {
     setShowQuestions(false);
 
     try {
-      const accessToken = localStorage.getItem("accessToken");
-
-      const response = await fetch(`${API_BASE_URL}/api/review`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify({
-          code,
-          comment: userComment,
-          repoUrl: mode === "repo" ? repoUrl : null,
-        }),
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("로그인이 필요합니다. GitHub 로그인 후 다시 시도해 주세요.");
-      }
-
-      if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        throw new Error(
-          `코드 리뷰 요청 실패 (status: ${response.status}) ${text || ""}`.trim()
-        );
-      }
-
-      const data = await response.json();
+      // 🔹 분리된 API 사용
+      const data = await fetchCodeReview(code, userComment, mode === "repo" ? repoUrl : null);
 
       const reviewText =
         typeof data?.review === "string"

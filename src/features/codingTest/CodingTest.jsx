@@ -15,11 +15,7 @@ import {
   Code2,
 } from "lucide-react";
 
-// ✅ API 호출은 분리된 서비스에서 import
-import {
-  fetchRandomProblem,
-  submitCode,
-} from "../../api/codingService";
+import { fetchRandomProblem, submitCode } from "@/api/codingService";
 
 // 언어 옵션
 const LANGUAGE_OPTIONS = [
@@ -167,7 +163,6 @@ export default function CodingTest() {
         // userId는 codingService에서 guest 처리 (또는 나중에 로그인 정보 연결)
       });
       setResult(res);
-      // showInterview는 기본 false (코드 리뷰 먼저 보여줌)
     } catch (err) {
       setErrorMsg(err?.message || "채점 서버 통신 중 오류가 발생했습니다.");
     } finally {
@@ -273,10 +268,7 @@ export default function CodingTest() {
         {/* 에러 알림 */}
         {errorMsg && (
           <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-5 py-3 flex items-start gap-3 text-rose-200 shadow-lg backdrop-blur-md max-w-2xl mx-auto shrink-0 absolute top-20 left-1/2 -translate-x-1/2 z-50">
-            <AlertCircle
-              size={20}
-              className="mt-0.5 shrink-0 text-rose-400"
-            />
+            <AlertCircle size={20} className="mt-0.5 shrink-0 text-rose-400" />
             <p className="text-sm font-medium">{errorMsg}</p>
           </div>
         )}
@@ -503,7 +495,7 @@ export default function CodingTest() {
                         </div>
                       </div>
 
-                      {/* 🔥 오른쪽: 예상 면접 질문 토글 버튼 */}
+                      {/* 예상 면접 질문 토글 버튼 */}
                       {Array.isArray(result.interviewQuestions) &&
                         result.interviewQuestions.length > 0 && (
                           <button
@@ -525,7 +517,7 @@ export default function CodingTest() {
                         )}
                     </div>
 
-                    {/* 🔥 피드백 / 질문 */}
+                    {/* 내용: 피드백 / 질문 */}
                     {hasFeedback ? (
                       <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 shadow-inner">
                         <div className="flex items-center justify-between mb-2">

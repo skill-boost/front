@@ -27,3 +27,8 @@ http://localhost:8080
 프론트:
 
 http://localhost:3000
+
+🔵 4. 음성 인식 모델(Vosk) 설치 - vosk-model-small-ko-0.22
+
+https://alphacephei.com/vosk/models
+

@@ -34,7 +34,7 @@ export default function App() {
       {/* 로그인 페이지 */}
       <Route path="/login" element={<Login />} />
 
-      {/* 🔥 GitHub OAuth 콜백 (백엔드에서 http://localhost:3000/oauth2/redirect 로 보냄) */}
+      {/* GitHub OAuth 콜백*/}
       <Route path="/oauth2/redirect" element={<GithubCallback />} />
 
       {/* 404 */}

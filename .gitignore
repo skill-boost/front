@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables (🔒 절대 Git에 올리면 안 되는 민감 정보)
+.env

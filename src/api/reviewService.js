@@ -1,23 +1,31 @@
-// src/api/reviewService.js
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchCodeReview = async (code, comment, repoUrl) => {
+  const accessToken = localStorage.getItem("accessToken");
+
   const payload = {
-    code: code,
-    comment: comment && comment.trim() ? comment.trim() : null,
-    repoUrl: repoUrl && repoUrl.trim() ? repoUrl.trim() : null,
+    code,
+    comment: comment?.trim() || null,
+    repoUrl: repoUrl?.trim() || null,
   };
 
   try {
-    const res = await fetch(`${BASE_URL}/review`, {
+    const res = await fetch(`${BASE_URL}/api/review`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
       body: JSON.stringify(payload),
     });
 
     const raw = await res.text();
+
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(
+        "로그인이 필요합니다. GitHub 로그인 후 다시 시도해 주세요."
+      );
+    }
 
     if (!res.ok) {
       try {

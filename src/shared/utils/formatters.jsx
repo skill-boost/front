@@ -1,4 +1,3 @@
-// src/utils/formatters.js
 import React from 'react';
 
 /**

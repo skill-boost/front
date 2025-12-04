@@ -9,14 +9,13 @@ import {
 } from "@tabler/icons-react";
 import Particles from "@tsparticles/react";
 
-// --- 추가된 부분: 마크다운 & 코드 하이라이팅 ---
+// --- 마크다운 & 코드 하이라이팅 ---
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"; // VS Code 다크 테마
-// -------------------------------------------
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+// --------------------------------
 
-// API 분리해서 가져오기
 import { fetchCodeReview } from "@/api/reviewService";
 
 const particlesOptions = {
@@ -32,8 +31,6 @@ const particlesOptions = {
     size: { value: { min: 1, max: 3 } },
   },
 };
-
-// formatReviewText 함수는 이제 필요 없어서 삭제했습니다.
 
 export default function Review() {
   const [mode, setMode] = useState("code");
@@ -136,7 +133,6 @@ export default function Review() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* 헤더 */}
         <header className="flex items-center justify-between mb-8">
           <Link
             to="/"
@@ -156,7 +152,6 @@ export default function Review() {
         </header>
 
         <main className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* LEFT CARD */}
           <section className="flex flex-col">
             <div className="gcard w-full h-[75vh]">
               <div className="ginner glass-sheen flex flex-col h-full">
@@ -189,7 +184,6 @@ export default function Review() {
                   </div>
                 </div>
 
-                {/* CONTENT */}
                 <div className="flex-1 p-5 pt-4 pb-3 overflow-y-auto custom-scrollbar">
                   {mode === "code" ? (
                     <textarea
@@ -220,7 +214,6 @@ export default function Review() {
                   )}
                 </div>
 
-                {/* REQUIREMENTS + 버튼 */}
                 <form
                   onSubmit={handleSubmit}
                   className="border-t border-white/5 px-5 pt-3 pb-4 space-y-3"
@@ -270,7 +263,6 @@ export default function Review() {
             </div>
           </section>
 
-          {/* RIGHT CARD */}
           <section className="flex flex-col">
             <div className="gcard w-full h-[75vh]">
               <div className="ginner glass-sheen flex flex-col h-full">
@@ -304,7 +296,6 @@ export default function Review() {
                 </div>
 
                 <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                  {/* LOADING */}
                   {isLoading && !review && (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                       <IconLoader2 size={40} className="animate-spin mb-4" />
@@ -312,7 +303,6 @@ export default function Review() {
                     </div>
                   )}
 
-                  {/* ERROR */}
                   {error && (
                     <div className="p-4 bg-red-900/40 border border-red-700/50 rounded-lg text-red-200">
                       <div className="flex items-center gap-2 font-semibold mb-1">
@@ -323,21 +313,19 @@ export default function Review() {
                     </div>
                   )}
 
-                  {/* EMPTY */}
                   {!isLoading && !error && !review && (
                     <div className="h-full flex items-center justify-center text-slate-400/90 text-center">
                       코드를 제출하면 AI 리뷰와 예상 면접 질문이 표시됩니다.
                     </div>
                   )}
 
-                  {/* REVIEW (핵심 변경 부분: Markdown + 커스텀 스타일) */}
                   {!showQuestions && review && (
                     <div className="text-sm md:text-[15px] leading-relaxed text-slate-200">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          // 코드 블록 스타일링 (다크 테마 + 하이라이팅)
-                          code({ node, inline, className, children, ...props }) {
+                          // ★★★ node 제거됨 ★★★
+                          code({ inline, className, children, ...props }) {
                             const match = /language-(\w+)/.exec(
                               className || ""
                             );
@@ -357,7 +345,6 @@ export default function Review() {
                                 </SyntaxHighlighter>
                               </div>
                             ) : (
-                              // 인라인 코드 (짧은 코드) 스타일
                               <code
                                 className="bg-slate-700/60 text-sky-300 px-1.5 py-0.5 rounded font-mono text-sm mx-1"
                                 {...props}
@@ -366,47 +353,44 @@ export default function Review() {
                               </code>
                             );
                           },
-                          // 헤더 스타일링
-                          h1: ({ node, ...props }) => (
+                          // ★★★ node 제거됨 ★★★
+                          h1: ({ ...props }) => (
                             <h1
                               className="text-2xl font-bold text-sky-400 mt-6 mb-4 pb-2 border-b border-white/10"
                               {...props}
                             />
                           ),
-                          h2: ({ node, ...props }) => (
+                          h2: ({ ...props }) => (
                             <h2
                               className="text-xl font-semibold text-indigo-300 mt-5 mb-3"
                               {...props}
                             />
                           ),
-                          h3: ({ node, ...props }) => (
+                          h3: ({ ...props }) => (
                             <h3
                               className="text-lg font-semibold text-white mt-4 mb-2"
                               {...props}
                             />
                           ),
-                          // 리스트 스타일링
-                          ul: ({ node, ...props }) => (
+                          ul: ({ ...props }) => (
                             <ul
                               className="list-disc list-inside space-y-1 my-3 pl-2 text-slate-300"
                               {...props}
                             />
                           ),
-                          ol: ({ node, ...props }) => (
+                          ol: ({ ...props }) => (
                             <ol
                               className="list-decimal list-inside space-y-1 my-3 pl-2 text-slate-300"
                               {...props}
                             />
                           ),
-                          // 인용구
-                          blockquote: ({ node, ...props }) => (
+                          blockquote: ({ ...props }) => (
                             <blockquote
                               className="border-l-4 border-indigo-500 pl-4 py-1 my-4 italic bg-slate-800/30 text-slate-400 rounded-r"
                               {...props}
                             />
                           ),
-                          // 링크
-                          a: ({ node, ...props }) => (
+                          a: ({ ...props }) => (
                             <a
                               className="text-sky-400 hover:text-sky-300 underline underline-offset-2"
                               target="_blank"
@@ -414,8 +398,7 @@ export default function Review() {
                               {...props}
                             />
                           ),
-                          // 문단
-                          p: ({ node, ...props }) => (
+                          p: ({ ...props }) => (
                             <p className="mb-3 last:mb-0" {...props} />
                           ),
                         }}
@@ -425,13 +408,13 @@ export default function Review() {
                     </div>
                   )}
 
-                  {/* QUESTIONS (면접 질문도 Markdown 적용) */}
                   {showQuestions && questions.length > 0 && (
                     <div className="text-sm md:text-[15px] leading-relaxed text-slate-100">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          p: ({ node, ...props }) => (
+                          // ★★★ node 제거됨 ★★★
+                          p: ({ ...props }) => (
                             <p
                               className="mb-4 p-3 bg-slate-800/40 rounded-lg border border-slate-700/50"
                               {...props}

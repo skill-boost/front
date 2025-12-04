@@ -9,6 +9,13 @@ import {
 } from "@tabler/icons-react";
 import Particles from "@tsparticles/react";
 
+// --- 추가된 부분: 마크다운 & 코드 하이라이팅 ---
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"; // VS Code 다크 테마
+// -------------------------------------------
+
 // API 분리해서 가져오기
 import { fetchCodeReview } from "@/api/reviewService";
 
@@ -26,15 +33,7 @@ const particlesOptions = {
   },
 };
 
-function formatReviewText(review) {
-  if (!review) return "";
-  return review
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .map((line) => line.replace(/^- /, "□ "))
-    .join("\n\n");
-}
+// formatReviewText 함수는 이제 필요 없어서 삭제했습니다.
 
 export default function Review() {
   const [mode, setMode] = useState("code");
@@ -74,7 +73,9 @@ export default function Review() {
     }
 
     if (mode === "repo" && !repoUrl.trim()) {
-      setError("Repository URL을 입력해주세요. (예: https://github.com/owner/repo)");
+      setError(
+        "Repository URL을 입력해주세요. (예: https://github.com/owner/repo)"
+      );
       return;
     }
 
@@ -84,8 +85,11 @@ export default function Review() {
     setShowQuestions(false);
 
     try {
-      // 🔹 분리된 API 사용
-      const data = await fetchCodeReview(code, userComment, mode === "repo" ? repoUrl : null);
+      const data = await fetchCodeReview(
+        code,
+        userComment,
+        mode === "repo" ? repoUrl : null
+      );
 
       const reviewText =
         typeof data?.review === "string"
@@ -304,9 +308,7 @@ export default function Review() {
                   {isLoading && !review && (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                       <IconLoader2 size={40} className="animate-spin mb-4" />
-                      <p className="text-base">
-                        AI가 코드를 분석 중입니다...
-                      </p>
+                      <p className="text-base">AI가 코드를 분석 중입니다...</p>
                     </div>
                   )}
 
@@ -328,22 +330,120 @@ export default function Review() {
                     </div>
                   )}
 
-                  {/* REVIEW */}
+                  {/* REVIEW (핵심 변경 부분: Markdown + 커스텀 스타일) */}
                   {!showQuestions && review && (
-                    <pre className="whitespace-pre-wrap text-sm md:text-[15px] leading-relaxed text-slate-100">
-                      {formatReviewText(review)}
-                    </pre>
+                    <div className="text-sm md:text-[15px] leading-relaxed text-slate-200">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          // 코드 블록 스타일링 (다크 테마 + 하이라이팅)
+                          code({ node, inline, className, children, ...props }) {
+                            const match = /language-(\w+)/.exec(
+                              className || ""
+                            );
+                            return !inline && match ? (
+                              <div className="my-4 rounded-md overflow-hidden border border-slate-700">
+                                <SyntaxHighlighter
+                                  style={vscDarkPlus}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  {...props}
+                                  customStyle={{
+                                    margin: 0,
+                                    padding: "1.2rem",
+                                  }}
+                                >
+                                  {String(children).replace(/\n$/, "")}
+                                </SyntaxHighlighter>
+                              </div>
+                            ) : (
+                              // 인라인 코드 (짧은 코드) 스타일
+                              <code
+                                className="bg-slate-700/60 text-sky-300 px-1.5 py-0.5 rounded font-mono text-sm mx-1"
+                                {...props}
+                              >
+                                {children}
+                              </code>
+                            );
+                          },
+                          // 헤더 스타일링
+                          h1: ({ node, ...props }) => (
+                            <h1
+                              className="text-2xl font-bold text-sky-400 mt-6 mb-4 pb-2 border-b border-white/10"
+                              {...props}
+                            />
+                          ),
+                          h2: ({ node, ...props }) => (
+                            <h2
+                              className="text-xl font-semibold text-indigo-300 mt-5 mb-3"
+                              {...props}
+                            />
+                          ),
+                          h3: ({ node, ...props }) => (
+                            <h3
+                              className="text-lg font-semibold text-white mt-4 mb-2"
+                              {...props}
+                            />
+                          ),
+                          // 리스트 스타일링
+                          ul: ({ node, ...props }) => (
+                            <ul
+                              className="list-disc list-inside space-y-1 my-3 pl-2 text-slate-300"
+                              {...props}
+                            />
+                          ),
+                          ol: ({ node, ...props }) => (
+                            <ol
+                              className="list-decimal list-inside space-y-1 my-3 pl-2 text-slate-300"
+                              {...props}
+                            />
+                          ),
+                          // 인용구
+                          blockquote: ({ node, ...props }) => (
+                            <blockquote
+                              className="border-l-4 border-indigo-500 pl-4 py-1 my-4 italic bg-slate-800/30 text-slate-400 rounded-r"
+                              {...props}
+                            />
+                          ),
+                          // 링크
+                          a: ({ node, ...props }) => (
+                            <a
+                              className="text-sky-400 hover:text-sky-300 underline underline-offset-2"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              {...props}
+                            />
+                          ),
+                          // 문단
+                          p: ({ node, ...props }) => (
+                            <p className="mb-3 last:mb-0" {...props} />
+                          ),
+                        }}
+                      >
+                        {review}
+                      </ReactMarkdown>
+                    </div>
                   )}
 
-                  {/* QUESTIONS */}
+                  {/* QUESTIONS (면접 질문도 Markdown 적용) */}
                   {showQuestions && questions.length > 0 && (
-                    <ol className="list-decimal list-inside space-y-3 text-sm md:text-[15px] leading-relaxed text-slate-100">
-                      {questions.map((q, i) => (
-                        <li key={i} className="whitespace-pre-wrap">
-                          {q.trim()}
-                        </li>
-                      ))}
-                    </ol>
+                    <div className="text-sm md:text-[15px] leading-relaxed text-slate-100">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ node, ...props }) => (
+                            <p
+                              className="mb-4 p-3 bg-slate-800/40 rounded-lg border border-slate-700/50"
+                              {...props}
+                            />
+                          ),
+                        }}
+                      >
+                        {questions
+                          .map((q, i) => `**${i + 1}.** ${q}`)
+                          .join("\n\n")}
+                      </ReactMarkdown>
+                    </div>
                   )}
                 </div>
               </div>

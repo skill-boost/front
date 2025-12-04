@@ -3,20 +3,32 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const fetchCodeReview = async (code, comment, repoUrl) => {
   const accessToken = localStorage.getItem("accessToken");
 
-  const payload = {
-    code,
-    comment: comment?.trim() || null,
-    repoUrl: repoUrl?.trim() || null,
-  };
+  // 🔹 백엔드가 @RequestParam("code", "comment", "repo_url", "branch") 를 받으니까
+  //    JSON 대신 FormData로 보내주자.
+  const formData = new FormData();
+  formData.append("code", code); // 필수
+
+  if (comment && comment.trim()) {
+    formData.append("comment", comment.trim());
+  }
+
+  if (repoUrl && repoUrl.trim()) {
+    // 백엔드는 "repo_url" 이라는 이름으로 받음!!
+    formData.append("repo_url", repoUrl.trim());
+  }
+
+  // branch는 안 보내도 defaultValue = "main" 이지만, 명시적으로 보내줄게
+  formData.append("branch", "main");
 
   try {
     const res = await fetch(`${BASE_URL}/api/review`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        // ⚠️ FormData 쓸 때는 Content-Type 직접 쓰지 말기!
+        // 브라우저가 boundary 포함해서 자동으로 넣어줌.
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: JSON.stringify(payload),
+      body: formData,
     });
 
     const raw = await res.text();
@@ -45,7 +57,6 @@ export const fetchCodeReview = async (code, comment, repoUrl) => {
     try {
       return JSON.parse(raw);
     } catch {
-      // 응답이 순수 텍스트일 때
       return { review: raw, questions: [] };
     }
   } catch (error) {
